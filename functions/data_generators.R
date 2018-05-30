@@ -1,14 +1,14 @@
 # Functions for creating necessary data frames
 
 .build_obs_covariates = function(covariate_fns, g, w) {
-  z_obs = lapply(covariate_fns, function(f) {f(g, w)})
-  do.call(data.frame, z_obs)
+  x_obs = lapply(covariate_fns, function(f) {f(g, w)})
+  do.call(data.frame, x_obs)
 }
 
 .build_counterfactual_covariates = function(covariate_fns, g, w){
-  z = lapply(covariate_fns, function(f) {f(g, w)})
+  x = lapply(covariate_fns, function(f) {f(g, w)})
   #names(z) = sapply(names(z), function(name) {paste(name, suffix, sep='')})
-  do.call(data.frame, z)
+  do.call(data.frame, x)
 }
 
 .build_treated_covariates = function(covariate_fns, g) {
@@ -33,8 +33,8 @@ generate_covariate_data = function(g, covariate_fns) {
   # noise is a vector of length vcount(g)
   # covariate functions is a list of functions of the form f(g, w)
   w = rbinom(vcount(g), size=1, prob=0.5)
-  z_observed = .build_obs_covariates(covariate_fns, g, w) 
-  z_all_treated = .build_treated_covariates(covariate_fns, g)
-  z_all_control = .build_control_covariates(covariate_fns, g)
-  list(w=w, z_obs=z_observed, z_trt=z_all_treated, z_ctrl=z_all_control)
+  x_observed = .build_obs_covariates(covariate_fns, g, w) 
+  x_global_trt = .build_treated_covariates(covariate_fns, g)
+  x_global_ctrl = .build_control_covariates(covariate_fns, g)
+  list(w=w, x_obs=x_observed, x_trt=x_global_trt, x_ctrl=x_global_ctrl)
 }

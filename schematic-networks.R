@@ -9,8 +9,8 @@ library(intergraph)
 library(GGally)
 library(network)
 
-cai_all = read.dta('~/src/seeding/alex/cai-data/data/0422allinforawnet.dta')
-source('~/src/seeding/alex/simulations/village.R')
+cai_all = read.dta('~/src/GitHub/seeding/alex/cai-data/data/0422allinforawnet.dta')
+source('~/src/GitHub/seeding/alex/simulations/village.R')
 village_names = unique(cai_all$address)[1:20]
 
 g_cai = cai_all %>% filter(
@@ -37,9 +37,7 @@ p_cai
 
 
 
-fb_data = readMat('~/Documents/facebook100/Caltech36.mat')
-g_fb = graph_from_adjacency_matrix(fb_data$A, mode='undirected')
-g_fb = induced_subgraph(g_fb, which(components(g_fb)$membership == 1))
+load('data/caltech.Rdata')
 
 p_fb = ggnet2(g_fb, node.size=2, node.color=orange, edge.color=light_grey) + 
   ggtitle('Caltech Facebook network, 2005') + 
@@ -47,4 +45,4 @@ p_fb = ggnet2(g_fb, node.size=2, node.color=orange, edge.color=light_grey) +
 p_fb
 
 p = grid.arrange(p_cai, p_fb, nrow=1)
-ggsave('~/src/GitHub/interference-controls/schematic.png', p)
+ggsave('figures/schematic.png', p)

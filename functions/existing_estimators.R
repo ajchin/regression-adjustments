@@ -5,19 +5,20 @@ difference_in_means = function(data) {
   with(data, mean(y[w==1]) - mean(y[w==0]))
 }
 
-# For now, handles only z in [0, 1] (i.e. a fraction)
+# For now, handles only x in [0, 1] (i.e. a fraction)
 # Exposure probabilities are only for Bernoulli randomization
-.indiv_hajek_weight = function(w, z, d, thresh, p_design=0.5) {
+.indiv_hajek_weight = function(w, x, d, thresh, p_design=0.5) {
   if (w == 0) {
-    if (z > 1 - thresh) return(0)
+    if (x > 1 - thresh) return(0)
     
     # compute exposure probability 
-    p = p_design * pbinom(d * (1 - thresh), size=d, prob=p_design)
+    p = (1 - p_design) * pbinom(floor(d * (1 - thresh)), size=d, prob=p_design)
     return(1 / p)
   }
   
-  if (z < thresh) return(0)
-  p = p_design * pbinom(d * (1 - thresh), size=d, prob=1 - p_design)
+  # w = 1
+  if (x < thresh) return(0)
+  p = p_design * (1 - pbinom(floor(d * thresh), size=d, prob=p_design))
   return(1 / p)
 }
 
@@ -28,11 +29,11 @@ hajek_weights = function(data, threshold_var_name, threshold, p_design=0.5) {
   #    Assumes the all-treated column has the same name but with '_T' suffix.
   
   w = data$w
-  threshold_var = data$z_obs[, threshold_var_name]
-  threshold_var_trt = data$z_trt[, threshold_var_name]
+  threshold_var = data$x_obs[, threshold_var_name]
+  threshold_var_trt = data$x_trt[, threshold_var_name]
   
   # these are unnormalized weights
-  wts = sapply(1:nrow(data$z_obs), function(i) {
+  wts = sapply(1:nrow(data$x_obs), function(i) {
     .indiv_hajek_weight(w[i], threshold_var[i], threshold_var_trt[i], threshold, p_design)
   })
   

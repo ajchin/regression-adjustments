@@ -1,14 +1,14 @@
 
 # Plain linear model
-linear_response = function(w, z, param, noise_sd = 1) {
+linear_response = function(w, x, param, noise_sd = 1) {
   n = length(w)
-  z = as.matrix(z)
+  x = as.matrix(x)
   
-  z_trt = data$z_obs %>% filter(data$w == 1)
-  z_ctrl = data$z_ctrl %>% filter(data$w == 0)
+  x_trt = data$x_obs %>% filter(data$w == 1)
+  x_ctrl = data$x_ctrl %>% filter(data$w == 0)
   
-  y = (param$alpha_ctrl + z %*% param$beta_ctrl) * (w == 0) + 
-    (param$alpha_trt +z %*% param$beta_trt) * (w == 1) + rnorm(n, sd=noise_sd)
+  y = (param$alpha_ctrl + x %*% param$beta_ctrl) * (w == 0) + 
+    (param$alpha_trt +x %*% param$beta_trt) * (w == 1) + rnorm(n, sd=noise_sd)
   return(y)
 }
 
@@ -37,18 +37,18 @@ dynamic_time_response = function(w, g, param, noise_sd = 1) {
 
 
 # nonlinear in both num_trt_nbrs and frac_trt_nbrs
-nonlinear_response = function(w, z, param, noise_sd = 1) {
+nonlinear_response = function(w, x, param, noise_sd = 1) {
   n = length(w)
   
   # intercept and (heterogeneous) direct effect #TODO FIX MEAN = 1
   y = -5 + 2 * rnorm(n, mean=0, sd=2) * data$w
   
   # number of treated neighbors
-  num_nbh = z$num_nbh
+  num_nbh = x$num_nbh
   y = y + num_nbh * 0.03 + 2 / (1 + 0.001 * exp(-0.03 * (num_nbh - 300)))
   
   # fraction of treated neighbors
-  frac_nbh = z$frac_nbh
+  frac_nbh = x$frac_nbh
   y = y + 25 / (3 + exp(-8 * (frac_nbh - 0.4)))
   
   return(y + rnorm(n, sd=noise_sd))

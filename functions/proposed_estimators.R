@@ -1,12 +1,12 @@
 # Contains code for all proposed adjusted estimators
 
 
-.adjust_within_group = function(z, y, formula, pred_z) {
-  z_scaled = scale(z, center=TRUE, scale=FALSE)
-  shift = attr(z_scaled, 'scaled:center')
-  df = data.frame(y, z_scaled %>% data.frame)
+.adjust_within_group = function(x, y, formula, pred_x) {
+  x_scaled = scale(x, center=TRUE, scale=FALSE)
+  shift = attr(x_scaled, 'scaled:center')
+  df = data.frame(y, x_scaled %>% data.frame)
   fit = lm(formula, df)
-  predict(fit, newdata=pred_z - shift)
+  predict(fit, newdata=pred_x - shift)
 }
 
 linear_adjustment = function(data, vars=NULL) {
@@ -14,8 +14,8 @@ linear_adjustment = function(data, vars=NULL) {
   w = data$w
   
   formula = if (is.null(vars)) 'y ~ .' else paste('y ~ ', paste(vars, collapse=' + '), sep='')
-  pred_all_trt = .adjust_within_group(data$z_obs %>% filter(w == 1), y[w==1], formula, data$z_trt)
-  pred_all_ctrl = .adjust_within_group(data$z_obs %>% filter(w == 0), y[w==0], formula, data$z_ctrl)
+  pred_all_trt = .adjust_within_group(data$x_obs %>% filter(w == 1), y[w==1], formula, data$x_trt)
+  pred_all_ctrl = .adjust_within_group(data$x_obs %>% filter(w == 0), y[w==0], formula, data$x_ctrl)
   mean(pred_all_trt) - mean(pred_all_ctrl)
 }
 
@@ -27,14 +27,14 @@ linear_adjustment = function(data, vars=NULL) {
   # group is 0 (ctrl) or 1 (trt)
   if (!(group %in% c(0, 1))) stop('group must be 0 or 1')
   
-  x_train = data$z_obs %>% filter(fold_id != fold, data$w == group)
+  x_train = data$x_obs %>% filter(fold_id != fold, data$w == group)
   y_train = data$y[fold_id != fold & data$w == group]
   if (n_cores == 1) {
     fit = wbart(x_train, y_train)
   } else {
     fit = mc.wbart(x_train, y_train, mc.cores=n_cores)
   }
-  x_test = if (group == 1) data$z_trt else data$z_ctrl
+  x_test = if (group == 1) data$x_trt else data$x_ctrl
   x_test = x_test %>% filter(fold_id == fold) %>% as.matrix
   predict(fit, newdata=x_test, mc.cores=n_cores) %>% apply(2, mean)
 }
