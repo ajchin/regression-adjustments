@@ -52,8 +52,11 @@ df = rbind(
   data.frame(frac_nbh=X[w==1], wt=reg_wt1, w='treatment', estimator='regression')
 )
 
-df %>% ggplot(aes(frac_nbh, wt, colour=as.factor(w))) + geom_point(shape=0) + 
+p = df %>% ggplot(aes(frac_nbh, wt, colour=as.factor(w))) + geom_point(shape=0) + 
   geom_hline(yintercept=0, linetype='dashed') + facet_grid(. ~ estimator) + 
   scale_colour_manual(values=palette) + theme_bw() + 
   theme(legend.position='bottom', plot.title = element_text(hjust = 0.5)) + labs(colour = "treatment group") + 
   ggtitle('Estimator weights') + xlab('proportion of treated neighbors') + ylab('weight')
+
+ggsave('figures/weights.png', p, width=6, height=4)
+
