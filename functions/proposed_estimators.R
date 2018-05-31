@@ -2,11 +2,8 @@
 
 
 .adjust_within_group = function(x, y, formula, pred_x) {
-  x_scaled = scale(x, center=TRUE, scale=FALSE)
-  shift = attr(x_scaled, 'scaled:center')
-  df = data.frame(y, x_scaled %>% data.frame)
-  fit = lm(formula, df)
-  predict(fit, newdata=pred_x - shift)
+  fit = lm(formula, data=data.frame(y=y, x))
+  predict(fit, newdata=pred_x)
 }
 
 linear_adjustment = function(data, vars=NULL) {

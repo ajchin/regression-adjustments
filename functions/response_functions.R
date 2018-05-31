@@ -4,11 +4,8 @@ linear_response = function(w, x, param, noise_sd = 1) {
   n = length(w)
   x = as.matrix(x)
   
-  x_trt = data$x_obs %>% filter(data$w == 1)
-  x_ctrl = data$x_ctrl %>% filter(data$w == 0)
-  
   y = (param$alpha_ctrl + x %*% param$beta_ctrl) * (w == 0) + 
-    (param$alpha_trt +x %*% param$beta_trt) * (w == 1) + rnorm(n, sd=noise_sd)
+    (param$alpha_trt + x %*% param$beta_trt) * (w == 1) + rnorm(n, sd=noise_sd)
   return(y)
 }
 

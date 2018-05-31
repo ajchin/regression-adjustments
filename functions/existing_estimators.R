@@ -24,17 +24,17 @@ difference_in_means = function(data) {
 
 # Return vector of Hajek weights.  We expose this function because sometimes we want to 
 # examine/plot the weights.
-hajek_weights = function(data, threshold_var_name, threshold, p_design=0.5) {
+hajek_weights = function(data, g, threshold_var_name, threshold, p_design=0.5) {
   # threshold_var: string name of variable to threshold on.
   #    Assumes the all-treated column has the same name but with '_T' suffix.
   
   w = data$w
   threshold_var = data$x_obs[, threshold_var_name]
-  threshold_var_trt = data$x_trt[, threshold_var_name]
+  #threshold_var_trt = data$x_trt[, threshold_var_name]
   
   # these are unnormalized weights
   wts = sapply(1:nrow(data$x_obs), function(i) {
-    .indiv_hajek_weight(w[i], threshold_var[i], threshold_var_trt[i], threshold, p_design)
+    .indiv_hajek_weight(w[i], threshold_var[i], degree(g)[i], threshold, p_design)
   })
   
   # now normalize within group
@@ -43,8 +43,8 @@ hajek_weights = function(data, threshold_var_name, threshold, p_design=0.5) {
   return(wts / sum_trt_wt * (w == 1) - wts / sum_ctrl_wt * (w == 0))
 }
 
-hajek = function(data, threshold_var_name, threshold, p_design=0.5) {
-  wts = hajek_weights(data, threshold_var_name, threshold, p_design)
+hajek = function(data, g, threshold_var_name, threshold, p_design=0.5) {
+  wts = hajek_weights(data, g, threshold_var_name, threshold, p_design)
   return(sum(data$y * wts))
 }
 

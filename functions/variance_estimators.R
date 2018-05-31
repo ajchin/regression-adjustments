@@ -1,8 +1,9 @@
 # Contains variance estimators for regression estimators
 
 
-linear_variance_estimate = function(data, Gamma, Delta) {
+linear_variance_estimate = function(data, Gamma, Delta, vars=NULL) {
   df = with(data, data.frame(y, x_obs))
+  df = scale(df, center=TRUE, scale=FALSE) %>% as.data.frame
   n = nrow(df)
   formula = if (is.null(vars)) 'y ~ .' else paste('y ~ ', paste(vars, collapse=' + '), sep='')
   lm_trt = lm(formula, data=df %>% filter(data$w == 1))

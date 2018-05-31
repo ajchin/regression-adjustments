@@ -4,6 +4,8 @@
 # Gamma is comprised of the variance/covariance of sample means
 .compute_gamma = function(moments) {
   B = length(moments)
+  xbar0 = foreach(m = moments) %do% {m$xbar0}
+  xbar1 = foreach(m = moments) %do% {m$xbar1}
   Exbar0 = Reduce(`+`, xbar0) / B
   Exbar1 = Reduce(`+`, xbar1) / B
   
