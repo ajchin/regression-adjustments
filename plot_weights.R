@@ -15,6 +15,8 @@ source('functions/proposed_estimators.R')
 source('functions/variance_estimators.R')
 source('functions/precompute_matrices.R')
 
+set.seed(2010)
+
 load('data/caltech.Rdata')
 
 palette = c("#E69F00", "#56B4E9", "#009E73")
@@ -23,7 +25,7 @@ palette = c("#E69F00", "#56B4E9", "#009E73")
 covariate_fns = list(frac_nbh=fraction_trt_nbrs)
 data = generate_covariate_data(g_fb, covariate_fns)
 
-param = list(alpha_trt = 1, beta_trt = 3, alpha_ctrl = 0, beta_ctrl = 1)
+param = list(alpha_trt = 3, beta_trt = 0.5, alpha_ctrl = 0, beta_ctrl = 0.2)
 data$y = linear_response(data$w, data$x_obs, param, noise_sd = 1)
 
 data %>% linear_adjustment()
@@ -34,14 +36,20 @@ w = data$w
 N0 = sum(w == 0)
 N1 = sum(w == 1)
 X = data$x_obs$frac_nbh
-X0 = X[w==0] - mean(X)
-X1 = X[w==1] - mean(X)
+y0 = data$y[w==0]
+y1 = data$y[w==1]
+X0 = X[w==0]
+X1 = X[w==1]
+X0cent = X0 - mean(X0)
+X1cent = X1 - mean(X1)
 omega0 = apply(data$x_ctrl, 2, mean)
 omega1 = apply(data$x_trt, 2, mean)
-reg_wt0 = - 1 / N0 - t(omega0) %*% solve(t(X0) %*% X0) %*% t(X0) %>% as.vector
-reg_wt1 = 1 / N1 + t(omega1) %*% solve(t(X1) %*% X1) %*% t(X1) %>% as.vector
+J0 = diag(N0) - matrix(1/N0, N0, N0)
+J1 = diag(N1) - matrix(1/N1, N1, N1)
+reg_wt0 = - 1 / N0 - t(omega0 - mean(X0)) %*% solve(t(X0cent) %*% X0cent) %*% t(X0cent) %*% J0 %>% as.vector
+reg_wt1 =  1 / N1 + t(omega1 - mean(X1)) %*% solve(t(X1cent) %*% X1cent) %*% t(X1cent) %*% J1 %>% as.vector
 
-sum(reg_wt1 * data$y[w==1]) - sum(reg_wt0 * data$y[w==0])
+sum(reg_wt1 * data$y[w==1]) + sum(reg_wt0 * data$y[w==0])
 
 # Hajek weights
 hajek_wts = data %>% hajek_weights(threshold_var_name='frac_nbh', g, threshold=0.75)

@@ -1,6 +1,5 @@
 library(igraph)
 library(foreign)
-library(tidyverse)
 library(foreach)
 library(R.matlab)
 library(ggplot2)
@@ -26,7 +25,7 @@ g_cai = cai_all %>% filter(
   igraph::simplify()
 
 
-orange = '#56B4E9' # '#E69F00' #56B4E9
+orange = '#E69F00' #56B4E9
 light_grey = '#C0C0C0'
 
 p_cai = ggnet2(g_cai, node.size=2, node.color=orange, edge.color=light_grey) + #edge.alpha 
