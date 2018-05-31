@@ -54,9 +54,12 @@ df = rbind(
 
 p = df %>% ggplot(aes(frac_nbh, wt, colour=as.factor(w))) + geom_point(shape=0) + 
   geom_hline(yintercept=0, linetype='dashed') + facet_grid(. ~ estimator) + 
+  geom_vline(aes(xintercept=xint), data=data.frame(xint=0.25, estimator='hajek'), linetype="dotted", colour="#E69F00") + 
+  geom_vline(aes(xintercept=xint), data=data.frame(xint=0.75, estimator='hajek'), linetype="dotted", colour="#56B4E9") + 
   scale_colour_manual(values=palette) + theme_bw() + 
   theme(legend.position='bottom', plot.title = element_text(hjust = 0.5)) + labs(colour = "treatment group") + 
-  ggtitle('Estimator weights') + xlab('proportion of treated neighbors') + ylab('weight')
+  ggtitle('Estimator weights for the Caltech network') + xlab('proportion of treated neighbors') + ylab('weight')
+p
 
 ggsave('figures/weights.png', p, width=6, height=4)
 
