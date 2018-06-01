@@ -1,19 +1,21 @@
 # Contains code for all proposed adjusted estimators
 
 
-.adjust_within_group = function(x, y, formula, pred_x) {
-  fit = lm(formula, data=data.frame(y=y, x))
-  predict(fit, newdata=pred_x)
-}
-
 linear_adjustment = function(data, vars=NULL) {
-  y = data$y
   w = data$w
+  y0 = data$y[w==0]
+  y1 = data$y[w==1]
+  x0 = data$x_obs[w==0,]
+  x1 = data$x_obs[w==1,]
   
-  formula = if (is.null(vars)) 'y ~ .' else paste('y ~ ', paste(vars, collapse=' + '), sep='')
-  pred_all_trt = .adjust_within_group(data$x_obs %>% filter(w == 1), y[w==1], formula, data$x_trt)
-  pred_all_ctrl = .adjust_within_group(data$x_obs %>% filter(w == 0), y[w==0], formula, data$x_ctrl)
-  mean(pred_all_trt) - mean(pred_all_ctrl)
+  beta0 = lm(y0 ~ ., data=x0) %>% coef
+  beta1 = lm(y1 ~ ., data=x1) %>% coef
+  omega0 = c(1, colMeans(data$x_ctrl))
+  omega1 = c(1, colMeans(data$x_trt))
+  
+  sum(omega1 * beta1) - sum(omega0 * beta0)
+  
+  #formula = if (is.null(vars)) 'y ~ .' else paste('y ~ ', paste(vars, collapse=' + '), sep='')
 }
 
 

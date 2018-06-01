@@ -98,3 +98,56 @@ reg_wt1 = 1 / N1 + t(omega1) %*% solve(t(X1) %*% X1) %*% t(X1) %>% as.vector
 
 sum(reg_wt1 * data$y[w==1]) - sum(reg_wt0 * data$y[w==0])
 
+
+
+foreach(i = 1:50, .combine=rbind) %dopar% {
+  data = generate_covariate_data(g, covariate_fns=list(x=fraction_trt_nbrs, y=number_trt_nbrs))
+  x0 = data$x_obs %>% filter(data$w == 0) %>% as.matrix
+  xbar0 = apply(x0, 2, mean)
+  xbar0_mat = matrix(rep(xbar0, each=nrow(x0)), nrow=nrow(x0))
+  
+  n0 = sum(data$w==1)
+  
+  S0inv = solve(t(x0 - xbar0_mat) %*% (x0 - xbar0_mat))
+  c(
+    S0inv[1,1]#,
+    #S0inv[2,2]
+    #1 / (n0 * var(data$x_obs$x[data$w==1]))
+  )
+}
+
+tmp =  foreach(i = 1:2000, .combine=rbind) %dopar% {
+  data = generate_covariate_data(g, covariate_fns=list(frac_nbh=fraction_trt_nbrs, num_nbh=number_trt_nbrs))
+  data$y = linear_response(data$w, data$x_obs, param, noise_sd=3)
+  y1 = data$y[data$w==1]
+  x1 = data$x_obs %>% filter(data$w == 1) %>% as.matrix
+  beta1=lm(y1 ~ x1) %>% tidy %>% .$estimate %>% .[2:3]
+  alpha1 = mean(y1) - colMeans(x1) %*% beta1
+  
+  y0 = data$y[data$w==0]
+  x0 = data$x_obs %>% filter(data$w == 0) %>% as.matrix
+  
+  beta0 = lm(y0 ~ x0) %>% tidy %>% .$estimate %>% .[2:3]
+  alpha0 = mean(y0) - colMeans(x0) %*% beta0
+  
+  c(alpha0, beta0, alpha1, beta1, data %>% linear_adjustment())
+}
+
+tmp %>% head
+
+var(tmp[,7])
+
+var(tmp[,1])
+var(tmp[,4])
+omega0 = c(0,0)
+omega1 = c(1,10)
+cov(tmp[,2:3])
+t(omega1) %*% cov(tmp[,5:6]) %*% omega1
+
+
+
+var(tmp[,2])
+var(tmp[,3])
+cov(tmp[,2], tmp[,3])
+
+9 * Delta

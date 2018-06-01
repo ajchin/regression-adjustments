@@ -15,7 +15,7 @@ source('functions/proposed_estimators.R')
 source('functions/variance_estimators.R')
 source('functions/precompute_matrices.R')
 
-set.seed(2010)
+set.seed(20)
 
 load('data/caltech.Rdata')
 
@@ -25,7 +25,7 @@ palette = c("#E69F00", "#56B4E9", "#009E73")
 covariate_fns = list(frac_nbh=fraction_trt_nbrs)
 data = generate_covariate_data(g_fb, covariate_fns)
 
-param = list(alpha_trt = 3, beta_trt = 0.5, alpha_ctrl = 0, beta_ctrl = 0.2)
+param = list(alpha_trt = 1, beta_trt = 1, alpha_ctrl = 4, beta_ctrl = 4)
 data$y = linear_response(data$w, data$x_obs, param, noise_sd = 1)
 
 data %>% linear_adjustment()
