@@ -1,22 +1,21 @@
 
-# Plain linear model
-linear_response = function(w, x, param, noise_sd = 1) {
+# Plain linear model with intercept, frac_nbh, num_nbh
+linear_response = function(w, x, p) {
   n = length(w)
-  x = as.matrix(x)
+  x = cbind(1, as.matrix(x))
   
-  y = (param$alpha_ctrl + x %*% param$beta_ctrl) * (w == 0) + 
-    (param$alpha_trt + x %*% param$beta_trt) * (w == 1) + rnorm(n, sd=noise_sd)
-  return(y)
+  y =  x %*% p$beta0 * (w == 0) + x %*% p$beta1 * (w == 1) + rnorm(n, sd=p$noise_sd)
+  y
 }
 
-# a la Manski; rom JCI paper
-dynamic_time_response = function(w, g, param, noise_sd = 1) {
+dynamic_time_response = function(w, g, param) {
   
   b_intercept = param$b_intercept
   b_direct = param$b_direct
   b_spill = param$b_spill
   max_t = param$max_t
   is_probit = param$is_probit
+  noise_sd = param$noise_sd
   
   adj = as_adj(g)
   n_peers = degree(g)

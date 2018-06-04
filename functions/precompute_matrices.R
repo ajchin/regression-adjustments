@@ -112,6 +112,7 @@ precompute_variance = function(g, covariate_fns, n_boot_reps, n_cores) {
   S1inv = foreach(m = moments) %do% {m$S1inv} %>% (function(M) {Reduce(`+`, M) / B})
 
   
+  data = generate_covariate_data(g, covariate_fns)
   omega0 = c(1, colMeans(data$x_ctrl))
   omega1 = c(1, colMeans(data$x_trt))
   

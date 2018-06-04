@@ -14,6 +14,7 @@ source('functions/existing_estimators.R')
 source('functions/proposed_estimators.R')
 source('functions/variance_estimators.R')
 source('functions/precompute_matrices.R')
+source('functions/clustering.R')
 
 set.seed(20)
 
@@ -60,6 +61,20 @@ df = rbind(
   data.frame(frac_nbh=X[w==1], wt=reg_wt1, w='treatment', estimator='regression')
 )
 
+
+# Clustered weights
+
+# clusters = epsilon_net(g_fb, order=2)
+# table(clusters)
+
+
+
+
+
+
+
+
+
 p = df %>% ggplot(aes(frac_nbh, wt, colour=as.factor(w))) + geom_point(shape=0) + 
   geom_hline(yintercept=0, linetype='dashed') + facet_grid(. ~ estimator) + 
   geom_vline(aes(xintercept=xint), data=data.frame(xint=0.25, estimator='hajek'), linetype="dotted", colour="#E69F00") + 
@@ -70,4 +85,6 @@ p = df %>% ggplot(aes(frac_nbh, wt, colour=as.factor(w))) + geom_point(shape=0) 
 p
 
 ggsave('figures/weights.png', p, width=6, height=4)
+
+
 
