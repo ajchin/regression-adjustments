@@ -63,7 +63,7 @@
     mutate(metric = factor(metric, levels=c('abs_bias', 'sd', 'RMSE'), labels=c('absolute bias', 'standard deviation', 'RMSE'))) %>% # reorder
     ggplot(aes(b_spill, value, group=estimator, colour=estimator)) + geom_point(shape=0) + geom_line() +
     facet_grid(max_t ~ metric, labeller=
-                 label_bquote(rows='step size T' == ~ .(max_t))
+                 label_bquote(rows='steps T' == ~ .(max_t))
     ) + scale_color_manual(values=cbPalette) + theme_bw() +
     scale_y_continuous(limits=limits, breaks=breaks) + 
     theme(
