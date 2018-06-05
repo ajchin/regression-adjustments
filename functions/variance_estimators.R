@@ -1,7 +1,14 @@
 # Contains variance estimators for regression estimators
 
+dm_variance_estimate = function(data) {
+  w = data$w
+  y = data$y
+  var(y[w==1]) / sum(w==1) + var(y[w==0]) / sum(w==0)
+}
+
 
 linear_variance_estimate = function(data, variance_factor, vars=NULL) {
+  if (is.null(vars)) vars = names(data$x_obs)
   df = with(data, data.frame(y, x_obs %>% select(one_of(vars))))
   df = scale(df, center=TRUE, scale=FALSE) %>% as.data.frame
   n = nrow(df)

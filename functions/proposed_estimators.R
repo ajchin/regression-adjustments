@@ -2,6 +2,7 @@
 
 
 linear_adjustment = function(data, vars=NULL) {
+  if (is.null(vars)) vars = names(data$x_obs)
   w = data$w
   y0 = data$y[w==0]
   y1 = data$y[w==1]

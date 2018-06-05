@@ -78,7 +78,7 @@ params = purrr::cross(list(
   b_spill = c(0, 0.25, 0.5, 0.75, 1),#0.1, 0.2, 0.3, 0.4, 0.5),
   max_t = c(2, 4),
   is_probit = FALSE,
-  noise_sd = c(3)
+  noise_sd = c(1, 3)
 ))
 
 
