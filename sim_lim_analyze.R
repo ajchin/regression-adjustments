@@ -3,18 +3,22 @@
     r_file = 'results/sim_lim/caltech_results_1.csv'
     t_file = 'results/sim_lim/caltech_true_ATE_1.csv'
     title = expression(paste('Caltech network, noise ', sigma, ' = 1'))
+    title2 = expression(paste('Caltech, ', sigma, ' = 1'))
   } else if (network == 'caltech' & sigma == 3) {
     r_file = 'results/sim_lim/caltech_results_3.csv'
     t_file = 'results/sim_lim/caltech_true_ATE_3.csv'
     title = expression(paste('Caltech network, noise ', sigma, ' = 3'))
+    title2 = expression(paste('Caltech, ', sigma, ' = 3'))
   } else if (network == 'smallworld' & sigma == 1) {
     r_file = 'results/sim_lim/smallworld_results_1.csv'
     t_file = 'results/sim_lim/smallworld_true_ATE_1.csv'
     title = expression(paste('Small-world network, noise ', sigma, ' = 1'))
+    title2 = expression(paste('Small-world, ', sigma, ' = 1'))
   } else if (network == 'smallworld' & sigma == 3) {
     r_file = 'results/sim_lim/smallworld_results_3.csv'
     t_file = 'results/sim_lim/smallworld_true_ATE_3.csv'
     title = expression(paste('Small-world network, noise ', sigma, ' = 3'))
+    title2 = expression(paste('Small-world, ', sigma, ' = 3'))
   } else stop()
   
   if (network == 'smallworld') {
@@ -105,7 +109,7 @@
       axis.text.x = element_text(angle = 45, hjust = 1)
     ) +
     xlab(expression('spillover effect '*gamma)) +
-    ggtitle(title)
+    ggtitle(title2)
   
   list(p_rmse=p_rmse, p_coverage=p_coverage)
 }
@@ -127,4 +131,4 @@ ggsave(filename='figures/lim_plot.png', p_all, width=8, height=8)
 p_cov = grid.arrange(p1$p_coverage, p2$p_coverage, p3$p_coverage, p4$p_coverage, nrow=1)
 p_cov
 
-ggsave(filename='figures/lim_coverage.png', p_cov, width=14, height=4)
+ggsave(filename='figures/lim_coverage.png', p_cov, width=10, height=4)
