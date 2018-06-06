@@ -59,7 +59,7 @@
   cbPalette <- c("#E69F00", "#56B4E9", "#009E73",  "#0072B2", "#D55E00", "#CC79A7")
   #"#F0E442",
   
-  summarised %>% gather(metric, value, abs_bias, sd, RMSE) %>%
+  p_rmse = summarised %>% gather(metric, value, abs_bias, sd, RMSE) %>%
     mutate(metric = factor(metric, levels=c('abs_bias', 'sd', 'RMSE'), labels=c('absolute bias', 'standard deviation', 'RMSE'))) %>% # reorder
     ggplot(aes(b_spill, value, group=estimator, colour=estimator)) + geom_point(shape=0) + geom_line() +
     facet_grid(max_t ~ metric, labeller=
@@ -73,17 +73,58 @@
     ) +
     xlab(expression('spillover effect '*gamma)) +
     ggtitle(title)
+  
+  
+  
+  level = 0.1
+  cov1 = results %>% 
+    select(pid, estimate=adj1, sd=var1) %>% 
+    left_join(truth) %>% 
+    mutate(bias = abs(estimate - ATE), true_sd = sd(estimate), covers = abs(estimate - ATE) / sd < qnorm(1 - level/2)) %>% 
+    group_by(pid) %>% 
+    summarise(coverage=mean(covers), mean(sd / true_sd)) %>% 
+    mutate(estimator='adj1')
+  cov2 = results %>% 
+    select(pid, estimate=adj2, sd=var2) %>% 
+    left_join(truth) %>% 
+    mutate(bias = abs(estimate - ATE), true_sd = sd(estimate), covers = abs(estimate - ATE) / sd < qnorm(1 - level/2)) %>% 
+    group_by(pid) %>% 
+    summarise(coverage=mean(covers), mean(sd / true_sd)) %>% 
+    mutate(estimator='adj2')
+  
+  p_coverage = rbind(cov1, cov2) %>%
+    left_join(params_df) %>%
+    ggplot(aes(b_spill, coverage, group=estimator, colour=estimator)) + 
+    geom_point(shape=0) + geom_line() +
+    scale_y_continuous(limits=c(0, 1)) + geom_hline(yintercept = 1 - level, linetype='dashed') + 
+    facet_grid(max_t ~ ., labeller=label_bquote(rows='steps T' == ~ .(max_t))) + 
+    scale_color_manual(values=cbPalette) + theme_bw() +
+    theme(
+      legend.position="bottom",
+      plot.title = element_text(hjust = 0.5),
+      axis.text.x = element_text(angle = 45, hjust = 1)
+    ) +
+    xlab(expression('spillover effect '*gamma)) +
+    ggtitle(title)
+  
+  list(p_rmse=p_rmse, p_coverage=p_coverage)
 }
 
 
+p1 = .plot_lim_results('smallworld', 1)
+p2 = .plot_lim_results('smallworld', 3)
+p3 = .plot_lim_results('caltech', 1)
+p4 = .plot_lim_results('caltech', 3)
 
-p_all = grid.arrange(
-  .plot_lim_results('smallworld', 1),
-  .plot_lim_results('smallworld', 3),
-  .plot_lim_results('caltech', 1),
-  .plot_lim_results('caltech', 3),
-  nrow=2
-)
+p_all = grid.arrange(p1$p_rmse, p2$p_rmse, p3$p_rmse, p4$p_rmse, nrow=2)
 p_all
 
 ggsave(filename='figures/lim_plot.png', p_all, width=8, height=8)
+
+
+
+
+p_cov = grid.arrange(p1$p_coverage, p2$p_coverage, p3$p_coverage, p4$p_coverage, nrow=1)
+p_cov
+
+ggsave(filename='figures/lim_coverage.png', p_cov, width=14, height=4)

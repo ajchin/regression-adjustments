@@ -21,7 +21,7 @@ run_sim = function(param, g, variance_factor, n_reps, n_cores, pid=NULL) {
   # creates a list containing the data
   covariate_fns_for_response=list(
     frac_nbh = fraction_trt_nbrs,
-    num_nbh = number_trt_nbrs
+    frac_nbh2 = fraction_trt_nbrs2
   )
   data = generate_covariate_data(g, covariate_fns_for_response)
   
@@ -48,7 +48,7 @@ registerDoParallel(cores=n_cores)
 
 covariate_fns_for_estimator=list(
   frac_nbh = fraction_trt_nbrs,
-  num_nbh = number_trt_nbrs
+  frac_nbh2 = fraction_trt_nbrs2
 )
 start = proc.time()
 vf = precompute_variance(g_fb,  covariate_fns_for_estimator, n_boot_reps=200, n_cores=n_cores)
@@ -62,7 +62,7 @@ params = purrr::cross(list(
   noise_sd = c(1, 3)
 ))
 
-param = params[[1]]
+param = params[[4]]
 
 print('Running simulation...')
 # Run simulation
@@ -79,7 +79,7 @@ write.csv(estimates, file='results/sim_basic.csv')
 
 d_bar = mean(degree(g_fb))
 
-truth = sapply(params, function(p) {with(p, beta1[1] - beta0[1] + beta1[2] + d_bar * beta1[3])})
+truth = sapply(params, function(p) {with(p, beta1[1] - beta0[1] + beta1[2] + beta1[3])})
 
 df_dm = estimates %>% 
   select(pid, estimate=dm, var_est=dm_var_est) %>%
