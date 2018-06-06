@@ -12,7 +12,7 @@
     t_file = 'results/sim_lim/smallworld_true_ATE_1.csv'
     title = expression(paste('Small-world network, noise ', sigma, ' = 1'))
   } else if (network == 'smallworld' & sigma == 3) {
-    r_file = 'results/sim_lim/smallworld_results_1.csv'
+    r_file = 'results/sim_lim/smallworld_results_3.csv'
     t_file = 'results/sim_lim/smallworld_true_ATE_3.csv'
     title = expression(paste('Small-world network, noise ', sigma, ' = 3'))
   } else stop()

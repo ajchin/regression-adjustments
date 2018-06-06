@@ -31,14 +31,25 @@ n_cores = 50
 
 registerDoParallel(cores=n_cores)
 
+# params = purrr::cross(list(
+#   b_intercept = 0,
+#   b_direct = 1,
+#   b_spill = c(0, 0.25, 0.5, 0.75, 1),#0.1, 0.2, 0.3, 0.4, 0.5),
+#   max_t = c(2, 4),
+#   is_probit = TRUE,
+#   noise_sd = c(1)
+# ))
+
 params = purrr::cross(list(
   b_intercept = 0,
   b_direct = 1,
-  b_spill = c(0, 0.25, 0.5, 0.75, 1),#0.1, 0.2, 0.3, 0.4, 0.5),
+  b_spill = c(0, 0.5, 1),#0.1, 0.2, 0.3, 0.4, 0.5),
   max_t = c(2, 4),
-  is_probit = FALSE,
-  noise_sd = c(3)
+  is_probit = TRUE,
+  noise_sd = 1 # c(1, 3)
 ))
+
+calculate_true_ATE(params[[5]], g_fb, pid=i)
 
 print('Calculating true ATE...')
 # Calculate true ATE by simulation
