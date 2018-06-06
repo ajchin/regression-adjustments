@@ -14,6 +14,5 @@ estimates = foreach(rep = 1:n_reps, .combine=rbind) %dopar% {
   run_sim(param, g_sm_large, vf1, vf2, n_reps, n_cores, pid = i)
 } %>% data.frame
 
-results %>%
-  group_by(pid) %>%
+estimates %>%
   summarise_each(funs(mean(., na.rm = TRUE)), dm, hajek, ols1, ols2, lr1, lr2)
