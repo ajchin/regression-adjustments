@@ -28,9 +28,9 @@ y = V(g)$y
 w = V(g)$w
 
 covariate_fns=list(
-  frac = fraction_trt_nbrs,
+  frac1 = fraction_trt_nbrs,
   frac2 = fraction_trt_nbrs2,
-  num = number_trt_nbrs,
+  num1 = number_trt_nbrs,
   num2 = number_trt_nbrs2
 )
 
@@ -55,7 +55,7 @@ mean(pred_trt) - mean(pred_ctrl)
 data = list(y=y, w=w, x_obs=x_obs, x_trt=x_trt, x_ctrl=x_ctrl)
 
 data %>% difference_in_means
-data %>% hajek(g, 'frac', threshold=0.75)
+data %>% hajek(g, 'frac1', threshold=0.75)
 data %>% linear_adjustment
 data %>% lr_crossfit(n_folds=3)
 
