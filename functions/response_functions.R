@@ -8,6 +8,15 @@ linear_response = function(w, x, p) {
   y
 }
 
+
+
+
+# just passes a linear model through logistic function
+binary_response = function(w, x, p) {
+  .logistic = function(x) {1 / (1 + exp(-x))}
+  linear_response(w, x, p) %>% (function(x) {1 * (.logistic(x) > 0.5)})
+}
+
 dynamic_time_response = function(w, g, param) {
   
   b_intercept = param$b_intercept
@@ -29,6 +38,21 @@ dynamic_time_response = function(w, g, param) {
   }
   
   return(y)
+}
+
+
+# nonlinear in frac_trt_nbrs
+basic_nonlinear_response = function(w, x, p) {
+  n = length(w)
+  
+  # intercept and (heterogeneous) direct effect #TODO FIX MEAN = 1
+  y = rnorm(n, mean=3, sd=0.5) * w
+  
+  # number of treated neighbors
+  num_nbh = x$num_nbh
+  y = y + num_nbh * 0.1 + 10 / (1 + 0.001 * exp(-1 * (num_nbh - 20)))
+  
+  return(y + rnorm(n, sd=p$noise_sd))
 }
 
 

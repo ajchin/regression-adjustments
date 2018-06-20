@@ -13,6 +13,13 @@ fraction_trt_nbrs2 = function(g, w) {
   as.vector(adj2 %*% w) / apply(adj2, 2, sum) 
 }
 
+
+fraction_trt_nbrs3 = function(g, w) {
+  adj = as_adj(g)
+  adj3 = adj %*% adj %*% adj
+  as.vector(adj3 %*% w) / apply(adj3, 2, sum)
+}
+
 number_trt_nbrs2 = function(g, w) {
   adj = as_adj(g)
   adj2 = adj %*% adj

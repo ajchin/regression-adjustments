@@ -20,6 +20,37 @@ linear_adjustment = function(data, vars=NULL) {
 }
 
 
+loess_crossfit = function(data) {
+  w = data$w
+  n = length(data$y)
+  n_folds = 2
+  fold_ids = sample(rep(1:n_folds, ceiling(n / n_folds))[1:n])
+  
+  # train models
+  models = foreach (fold = 1:n_folds) %do% {
+    foreach (group = c(0, 1), .final = function(x) setNames(x, c('fit0', 'fit1'))) %do% {
+      id_train = fold_ids != fold & w == group
+      df = data.frame(y = data$y[id_train], x = data$x_obs$num_nbh[id_train])
+      loess(y ~ x, data = df, control=loess.control(surface="direct"))
+    }
+  }
+  
+  predictions = foreach (fold = 1:n_folds, .combine = rbind) %do% {
+    id_test = fold_ids == fold 
+    glo_trt = predict(models[[fold]]$fit1, newdata=data$x_trt$num_nbh[id_test])
+    glo_ctrl = predict(models[[fold]]$fit0,  newdata=data$x_ctrl$num_nbh[id_test])
+    obs_trt = predict(models[[fold]]$fit1, newdata=data$x_obs$num_nbh[id_test])
+    obs_ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs$num_nbh[id_test])
+    data.frame(glo_trt=glo_trt, glo_ctrl=glo_ctrl, obs_trt=obs_trt, obs_ctrl=obs_ctrl)
+  }
+  
+  dm = mean(data$y[w==1]) - mean(data$y[w==0])
+  adjust_glo = with(predictions, mean(glo_trt) - mean(glo_ctrl))
+  adjust_obs = with(predictions, mean(obs_trt[w==1] - mean(obs_ctrl[w==0])))
+  
+  dm + adjust_glo - adjust_obs
+}
+
 lr_crossfit = function(data, n_folds = 3, vars = NULL) {
   
   if (is.null(vars)) vars = names(data$x_obs)
@@ -42,10 +73,10 @@ lr_crossfit = function(data, n_folds = 3, vars = NULL) {
   
   predictions = foreach (fold = 1:n_folds, .combine = rbind) %do% {
     id_test = fold_ids == fold 
-    glo_trt = predict(models[[fold]]$fit1, newdata=data$x_trt[id_test,,drop=FALSE], type='response')
-    glo_ctrl = predict(models[[fold]]$fit0, newdata=data$x_ctrl[id_test,,drop=FALSE], type='response')
-    obs_trt = predict(models[[fold]]$fit1, newdata=data$x_obs[id_test,,drop=FALSE], type='response')
-    obs_ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs[id_test,,drop=FALSE], type='response')
+    glo_trt = 1 * (predict(models[[fold]]$fit1, newdata=data$x_trt[id_test,,drop=FALSE], type='response') > 0.5)
+    glo_ctrl = 1 * (predict(models[[fold]]$fit0, newdata=data$x_ctrl[id_test,,drop=FALSE], type='response') < 0.5)
+    obs_trt = 1 * (predict(models[[fold]]$fit1, newdata=data$x_obs[id_test,,drop=FALSE], type='response') > 0.5)
+    obs_ctrl = 1 * (predict(models[[fold]]$fit0, newdata=data$x_obs[id_test,,drop=FALSE], type='response') < 0.5)
     data.frame(glo_trt=glo_trt, glo_ctrl=glo_ctrl, obs_trt=obs_trt, obs_ctrl=obs_ctrl)
   }
   
@@ -96,3 +127,4 @@ bart_crossfit = function(data, n_folds=5, n_cores=32) {
   
   mean(pred_all_trt) - mean(pred_all_ctrl)
 }
+

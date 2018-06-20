@@ -1,6 +1,7 @@
 library(ggplot2)
 library(GGally)
 
+set.seed(2018)
 
 cai_all = read.dta('cai-data/data/0422allinforawnet.dta')
 cai_survey = read.dta('cai-data/data/0422survey.dta')
@@ -45,26 +46,34 @@ fit = glm(y ~ ., data=data.frame(w, x_obs), family='binomial')
 
 pred_obs = predict(fit, newdata=data.frame(w, x_obs), type='response')
 mean(pred_obs[w==1]) - mean(pred_obs[w==0])
-pred_trt = predict(fit, newdata=data.frame(w=1, x_trt), type='response')
-pred_ctrl = predict(fit, newdata=data.frame(w=0, x_ctrl), type='response')
-mean(pred_trt)
-mean(pred_ctrl)
-mean(pred_trt) - mean(pred_ctrl)
 
 
 data = list(y=y, w=w, x_obs=x_obs, x_trt=x_trt, x_ctrl=x_ctrl)
 
-data %>% difference_in_means
-data %>% hajek(g, 'frac1', threshold=0.75)
-data %>% linear_adjustment
-data %>% lr_crossfit(n_folds=3)
+
+vf = precompute_variance(g, covariate_fns, n_boot_reps=100, n_cores=n_cores)
+
+df = data.frame(estimator=c('dm', 'hajek1', 'hajek2', 'linear', 'logistic'), 
+estimate=c(
+  data %>% difference_in_means,
+  data %>% hajek(g, 'frac1', threshold=0.75),
+  data %>% hajek(g, 'frac2', threshold=0.75),
+  data %>% linear_adjustment,
+  data %>% lr_crossfit(n_folds=5)
+),
+se = c(
+  0, 
+  0, 
+  0,
+  data %>%linear_variance_estimate(vf) %>% sqrt, 
+  0)
+) %>% xtable(digits=4) %>% print.xtable(include.rownames=FALSE)
 
 
 
 
 
-
-p_scatter = data.frame(y, x_obs) %>% ggpairs(lower=list(continuous=wrap('points', alpha=0.03, size=0.75))) + theme_bw() + 
+p_scatter = data.frame(y=as.factor(y), x_obs) %>% ggpairs(lower=list(continuous=wrap('points', alpha=0.03, size=0.75))) + theme_bw() + 
   ggtitle('Scatterplot matrix for Cai et al. (2015) variables') + theme(plot.title = element_text(hjust = 0.5))
 ggsave('figures/cai_scatter.png', p_scatter, width=8, height=6)
 p_scatter
@@ -72,18 +81,3 @@ p_scatter
 
 
 
-
-
-X = scale(data$x_obs) %>% data.frame
-k = 1000
-registerDoParallel(cores=32)
-test = foreach(i = 1:100, .combine=rbind) %dopar% {
-  id_tmp = sample(length(y), size=k)
-  cor(data$y[id_tmp], X$frac_nbh2[id_tmp])
-  lm(y[id_tmp] ~ ., data=data.frame(data$w[id_tmp], data$x_obs[id_tmp,])) %>% coef
-  #x = data$x_obs$frac_nbh2[id_tmp]
-  #c(mu = mean(x), sd=sd(x), mean(y[id_tmp]), sd(y[id_tmp]))
-}
-
-head(test)
-colMeans(test)
