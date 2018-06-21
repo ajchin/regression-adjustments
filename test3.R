@@ -12,11 +12,17 @@ run_sim = function(param, g, n_reps, n_cores, pid=NULL) {
   # generate response
   data$y = basic_nonlinear_response(data$w, data$x_obs, param)
   
+  
+  n_folds = 2
+  n = length(data$y)
+  fold_ids = sample(rep(1:n_folds, ceiling(n / n_folds))[1:n])
+  
   return(c(
     pid=pid,
     dm=data %>% difference_in_means,
     dm_var_est = data %>% dm_variance_estimate,
-    adjusted=data %>% loess_crossfit
+    adjusted=data %>% loess_crossfit(n_folds, fold_ids)
+    #var_est=data %>% loess_boot(n_folds, fold_ids, g, covariate_fns_for_response, B=50)
     #var_est=data %>% linear_variance_estimate(variance_factor)
   ))
 }

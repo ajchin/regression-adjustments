@@ -45,7 +45,7 @@ dynamic_time_response = function(w, g, param) {
 basic_nonlinear_response = function(w, x, p) {
   n = length(w)
   
-  # intercept and (heterogeneous) direct effect #TODO FIX MEAN = 1
+  # direct effect
   y = rnorm(n, mean=3, sd=0.5) * w
   
   # number of treated neighbors

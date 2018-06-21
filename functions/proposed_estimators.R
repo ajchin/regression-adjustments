@@ -19,12 +19,10 @@ linear_adjustment = function(data, vars=NULL) {
   #formula = if (is.null(vars)) 'y ~ .' else paste('y ~ ', paste(vars, collapse=' + '), sep='')
 }
 
-
-loess_crossfit = function(data) {
+# computes estimate and bootstrap variance estimate
+loess_crossfit = function(data, n_folds, fold_ids) {
   w = data$w
   n = length(data$y)
-  n_folds = 2
-  fold_ids = sample(rep(1:n_folds, ceiling(n / n_folds))[1:n])
   
   # train models
   models = foreach (fold = 1:n_folds) %do% {
@@ -41,7 +39,7 @@ loess_crossfit = function(data) {
     glo_ctrl = predict(models[[fold]]$fit0,  newdata=data$x_ctrl$num_nbh[id_test])
     obs_trt = predict(models[[fold]]$fit1, newdata=data$x_obs$num_nbh[id_test])
     obs_ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs$num_nbh[id_test])
-    data.frame(glo_trt=glo_trt, glo_ctrl=glo_ctrl, obs_trt=obs_trt, obs_ctrl=obs_ctrl)
+    data.frame(glo_trt=glo_trt, glo_ctrl=glo_ctrl, obs_trt=obs_trt, obs_ctrl=obs_ctrl)#, y=data$y[id_test], w=w[id_test])
   }
   
   dm = mean(data$y[w==1]) - mean(data$y[w==0])
@@ -51,7 +49,7 @@ loess_crossfit = function(data) {
   dm + adjust_glo - adjust_obs
 }
 
-lr_crossfit = function(data, n_folds = 3, vars = NULL) {
+lr_crossfit = function(data, fold_ids, n_folds = 3, vars = NULL) {
   
   if (is.null(vars)) vars = names(data$x_obs)
   
@@ -59,7 +57,6 @@ lr_crossfit = function(data, n_folds = 3, vars = NULL) {
   
   # create fold ids
   n = length(data$y)
-  fold_ids = sample(rep(1:n_folds, ceiling(n / n_folds))[1:n])
   
   # train models
   models = foreach (fold = 1:n_folds) %do% {
@@ -73,10 +70,10 @@ lr_crossfit = function(data, n_folds = 3, vars = NULL) {
   
   predictions = foreach (fold = 1:n_folds, .combine = rbind) %do% {
     id_test = fold_ids == fold 
-    glo_trt = 1 * (predict(models[[fold]]$fit1, newdata=data$x_trt[id_test,,drop=FALSE], type='response') > 0.5)
-    glo_ctrl = 1 * (predict(models[[fold]]$fit0, newdata=data$x_ctrl[id_test,,drop=FALSE], type='response') < 0.5)
-    obs_trt = 1 * (predict(models[[fold]]$fit1, newdata=data$x_obs[id_test,,drop=FALSE], type='response') > 0.5)
-    obs_ctrl = 1 * (predict(models[[fold]]$fit0, newdata=data$x_obs[id_test,,drop=FALSE], type='response') < 0.5)
+    glo_trt = predict(models[[fold]]$fit1, newdata=data$x_trt[id_test,,drop=FALSE], type='response')
+    glo_ctrl = predict(models[[fold]]$fit0, newdata=data$x_ctrl[id_test,,drop=FALSE], type='response')
+    obs_trt = predict(models[[fold]]$fit1, newdata=data$x_obs[id_test,,drop=FALSE], type='response')
+    obs_ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs[id_test,,drop=FALSE], type='response')
     data.frame(glo_trt=glo_trt, glo_ctrl=glo_ctrl, obs_trt=obs_trt, obs_ctrl=obs_ctrl)
   }
   

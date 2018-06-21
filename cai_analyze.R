@@ -53,29 +53,33 @@ data = list(y=y, w=w, x_obs=x_obs, x_trt=x_trt, x_ctrl=x_ctrl)
 
 vf = precompute_variance(g, covariate_fns, n_boot_reps=100, n_cores=n_cores)
 
+n = length(data$y)
+n_folds = 5
+fold_ids = sample(rep(1:n_folds, ceiling(n / n_folds))[1:n])
+
 df = data.frame(estimator=c('dm', 'hajek1', 'hajek2', 'linear', 'logistic'), 
 estimate=c(
   data %>% difference_in_means,
   data %>% hajek(g, 'frac1', threshold=0.75),
   data %>% hajek(g, 'frac2', threshold=0.75),
   data %>% linear_adjustment,
-  data %>% lr_crossfit(n_folds=5)
+  data %>% lr_crossfit(fold_ids, n_folds=n_folds)
 ),
 se = c(
   0, 
   0, 
   0,
-  data %>%linear_variance_estimate(vf) %>% sqrt, 
-  0)
+  data %>% linear_variance_estimate(vf) %>% sqrt, 
+  data %>% lr_boot(n_folds, fold_ids, g, covariate_fns, B=200) %>% sqrt)
 ) %>% xtable(digits=4) %>% print.xtable(include.rownames=FALSE)
 
 
 
 
 
-p_scatter = data.frame(y=as.factor(y), x_obs) %>% ggpairs(lower=list(continuous=wrap('points', alpha=0.03, size=0.75))) + theme_bw() + 
+p_scatter = data.frame(y=y, x_obs) %>% ggpairs(lower=list(continuous=wrap('points', alpha=0.03, size=0.75))) + theme_bw() + 
   ggtitle('Scatterplot matrix for Cai et al. (2015) variables') + theme(plot.title = element_text(hjust = 0.5))
-ggsave('figures/cai_scatter.png', p_scatter, width=8, height=6)
+ggsave('figures/cai_scatter.png', p_scatter, width=11, height=7)
 p_scatter
 
 
