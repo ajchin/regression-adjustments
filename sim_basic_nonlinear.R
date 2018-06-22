@@ -29,7 +29,7 @@ run_sim = function(param, g, n_reps, n_cores, pid=NULL) {
 
 param = list(noise_sd = 1)
 
-load('data/smallworld_large.Rdata')
+load('data/stanford.Rdata')
 
 
 n_reps = 200
