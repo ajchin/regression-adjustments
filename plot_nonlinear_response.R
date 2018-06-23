@@ -17,14 +17,18 @@ y = data$y
 
 df = data.frame(frac, num, y)
 
+source('color_palette.R')
+
 p_x = df %>% ggplot(aes(num, frac)) + 
   geom_point(alpha=0.05, shape=4) + scale_x_log10() + theme_bw() +
   xlab('number of treated neighbors') + ylab('fraction of treated neighbors')
 p_num = df %>%
   ggplot(aes(num, y)) + geom_point(alpha = 0.05, shape=4) + scale_x_log10() + 
+  geom_smooth(se=FALSE, linetype='dashed', colour=blue) +
   theme_bw() + xlab('number of treated neighbors')
 p_frac = df %>%
   ggplot(aes(frac, y)) + geom_point(alpha = 0.05, shape=4) +
+  geom_smooth(se=FALSE, linetype='dashed', colour=blue) +
   theme_bw() + xlab('fraction of treated neighbors')
 p = grid.arrange(p_x, p_num,  p_frac, nrow=1, 
                  top='Marginal plots for single instance of nonlinear response on Stanford network')
