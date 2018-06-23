@@ -15,11 +15,18 @@ frac = data$x_obs$frac_nbh
 num = data$x_obs$num_nbh
 y = data$y
 
-p_num = data.frame(y, num) %>% 
-  ggplot(aes(num, y)) + geom_point(alpha = 0.03, shape=4) + scale_x_log10() + 
+df = data.frame(frac, num, y)
+
+p_x = df %>% ggplot(aes(num, frac)) + 
+  geom_point(alpha=0.05, shape=4) + scale_x_log10() + theme_bw() +
+  xlab('number of treated neighbors') + ylab('fraction of treated neighbors')
+p_num = df %>%
+  ggplot(aes(num, y)) + geom_point(alpha = 0.05, shape=4) + scale_x_log10() + 
   theme_bw() + xlab('number of treated neighbors')
-p_frac = data.frame(y, frac) %>% 
-  ggplot(aes(frac, y)) + geom_point(alpha = 0.03, shape=4) +
+p_frac = df %>%
+  ggplot(aes(frac, y)) + geom_point(alpha = 0.05, shape=4) +
   theme_bw() + xlab('fraction of treated neighbors')
-p = grid.arrange(p_frac, p_num, nrow=1, top='Single instance of nonlinear response')
-ggsave('figures/nonlinear_response.png', p, width=10, height=5)
+p = grid.arrange(p_x, p_num,  p_frac, nrow=1, 
+                 top='Marginal plots for single instance of nonlinear response on Stanford network')
+p
+ggsave('figures/nonlinear_response.png', p, width=10, height=4)
