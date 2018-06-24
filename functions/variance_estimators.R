@@ -1,4 +1,5 @@
 # Contains variance estimators for regression estimators
+source('functions/proposed_estimators.R')
 
 dm_variance_estimate = function(data) {
   w = data$w
@@ -29,6 +30,54 @@ linear_variance_estimate = function(data, variance_factor, vars=NULL) {
   # 
   # c(s2=sigma_hat_sq, r=resid_term, eta=eta, delta=delta_term)
   #sigma_hat_sq * (resid_term + eta + delta_term)
+}
+
+gam_boot = function(data, n_folds, fold_ids, g, covariate_fns, B, vars=NULL) {
+  
+  if (is.null(vars)) vars = names(data$x_obs)
+  
+  w = data$w
+  n = length(data$y)
+  
+  # train models
+  models = foreach (fold = 1:n_folds) %do% {
+    foreach (group = c(0, 1), .final = function(x) setNames(x, c('fit0', 'fit1'))) %do% {
+      id_train = fold_ids != fold & w == group
+      X_train = data$x_obs[id_train,, drop=FALSE] %>% select(one_of(vars))
+      y_train = data$y[id_train]
+      gam(y_train ~ ., data=X_train)
+      #loess(y_train ~ ., data = X_train, control=loess.control(surface="direct"))
+    }
+  }
+  
+  predictions = foreach (fold = 1:n_folds, .combine = rbind) %do% {
+    id_test = fold_ids == fold 
+    obs_trt = predict(models[[fold]]$fit1, newdata=data$x_obs[id_test,,drop=FALSE])
+    obs_ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs[id_test,,drop=FALSE])
+    data.frame(obs_trt=obs_trt, obs_ctrl=obs_ctrl, y=data$y[id_test], w=w[id_test])
+  }
+  
+  # bootstrap variance estimate
+  residuals = with(predictions, w * (y - obs_trt) + (1 - w) * (y - obs_ctrl))
+  
+  tau_boot = foreach(b = 1:B, .combine=c) %dopar% {
+    data = generate_covariate_data(g, covariate_fns)
+    resids_boot = sample(residuals, size=n, replace=TRUE)
+    
+    # PREDICT NEW X THEN GENERATE Y THEN COMPUTE ESTIMSATOR
+    x = data$x_obs
+    mu_boot = foreach (fold = 1:n_folds, .combine=rbind) %do% {
+      id_test = fold_ids == fold
+      trt = predict(models[[fold]]$fit1, newdata=data$x_obs[id_test,,drop=FALSE])
+      ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs[id_test,,drop=FALSE])
+      data.frame(trt=trt, ctrl=ctrl, w = data$w[id_test])
+    }
+    data$y = with(mu_boot, w * trt + (1 - w) * ctrl + resids_boot)
+    data$w = mu_boot$w
+    gam_crossfit(data, n_folds, fold_ids)
+  }
+  
+  var(tau_boot)
 }
 
 loess_boot = function(data, n_folds, fold_ids, g, covariate_fns, B) {

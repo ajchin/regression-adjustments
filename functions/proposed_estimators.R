@@ -1,3 +1,5 @@
+library(gam)
+
 # Contains code for all proposed adjusted estimators
 
 
@@ -19,8 +21,9 @@ linear_adjustment = function(data, vars=NULL) {
   #formula = if (is.null(vars)) 'y ~ .' else paste('y ~ ', paste(vars, collapse=' + '), sep='')
 }
 
-# computes estimate and bootstrap variance estimate
-loess_crossfit = function(data, n_folds, fold_ids) {
+gam_crossfit = function(data, n_folds, fold_ids, vars = NULL) {
+  
+  if (is.null(vars)) vars = names(data$x_obs)
   w = data$w
   n = length(data$y)
   
@@ -28,17 +31,19 @@ loess_crossfit = function(data, n_folds, fold_ids) {
   models = foreach (fold = 1:n_folds) %do% {
     foreach (group = c(0, 1), .final = function(x) setNames(x, c('fit0', 'fit1'))) %do% {
       id_train = fold_ids != fold & w == group
-      df = data.frame(y = data$y[id_train], x = data$x_obs$num_nbh[id_train])
-      loess(y ~ x, data = df, control=loess.control(surface="direct"))
+      X_train = data$x_obs[id_train,, drop=FALSE] %>% select(one_of(vars))
+      y_train = data$y[id_train]
+      gam(y_train ~ ., data=X_train)
+      #loess(y_train ~ ., data = X_train, control=loess.control(surface="direct"))
     }
   }
   
   predictions = foreach (fold = 1:n_folds, .combine = rbind) %do% {
     id_test = fold_ids == fold 
-    glo_trt = predict(models[[fold]]$fit1, newdata=data$x_trt$num_nbh[id_test])
-    glo_ctrl = predict(models[[fold]]$fit0,  newdata=data$x_ctrl$num_nbh[id_test])
-    obs_trt = predict(models[[fold]]$fit1, newdata=data$x_obs$num_nbh[id_test])
-    obs_ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs$num_nbh[id_test])
+    glo_trt = predict(models[[fold]]$fit1, newdata=data$x_trt[id_test,,drop=FALSE])
+    glo_ctrl = predict(models[[fold]]$fit0,  newdata=data$x_ctrl[id_test,,drop=FALSE])
+    obs_trt = predict(models[[fold]]$fit1, newdata=data$x_obs[id_test,,drop=FALSE])
+    obs_ctrl = predict(models[[fold]]$fit0, newdata=data$x_obs[id_test,,drop=FALSE])
     data.frame(glo_trt=glo_trt, glo_ctrl=glo_ctrl, obs_trt=obs_trt, obs_ctrl=obs_ctrl)#, y=data$y[id_test], w=w[id_test])
   }
   

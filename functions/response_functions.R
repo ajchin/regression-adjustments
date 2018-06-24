@@ -61,15 +61,15 @@ nonlinear_response = function(w, x, param, noise_sd = 1) {
   n = length(w)
   
   # intercept and (heterogeneous) direct effect #TODO FIX MEAN = 1
-  y = -5 + 2 * rnorm(n, mean=0, sd=2) * data$w
+  y = -5 + 2 * rnorm(n, mean=2, sd=2) * data$w
   
   # number of treated neighbors
   num_nbh = x$num_nbh
-  y = y + num_nbh * 0.03 + 2 / (1 + 0.001 * exp(-0.03 * (num_nbh - 300)))
+  y = y + num_nbh * 0.03 + 1 / (1 + 0.001 * exp(-0.03 * (num_nbh - 300)))
   
   # fraction of treated neighbors
   frac_nbh = x$frac_nbh
-  y = y + 25 / (3 + exp(-8 * (frac_nbh - 0.4)))
+  y = y + 10 / (3 + exp(-8 * (frac_nbh - 0.4)))
   
   return(y + rnorm(n, sd=noise_sd))
 }
