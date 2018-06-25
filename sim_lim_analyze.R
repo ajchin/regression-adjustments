@@ -64,7 +64,7 @@
   #"#F0E442",
   
   p_rmse = summarised %>% gather(metric, value, abs_bias, sd, RMSE) %>%
-    mutate(metric = factor(metric, levels=c('abs_bias', 'sd', 'RMSE'), labels=c('absolute bias', 'standard deviation', 'RMSE'))) %>% # reorder
+    mutate(metric = factor(metric, levels=c('abs_bias', 'sd', 'RMSE'), labels=c('absolute bias', 'standard error', 'RMSE'))) %>% # reorder
     ggplot(aes(b_spill, value, group=estimator, colour=estimator)) + geom_point(shape=0) + geom_line() +
     facet_grid(max_t ~ metric, labeller=
                  label_bquote(rows='steps T' == ~ .(max_t))
