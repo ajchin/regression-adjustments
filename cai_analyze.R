@@ -77,10 +77,13 @@ se = c(
 
 
 
-p_scatter = data.frame(y=y, x_obs) %>% ggpairs(lower=list(continuous=wrap('points', alpha=0.03, size=0.75))) + theme_bw() + 
+p_scatter = data.frame(y=y, x_obs) %>% ggpairs(
+    lower=list(continuous=wrap('points', alpha=0.03, size=0.75, shape=4)), 
+    diag=list(continuous=wrap('barDiag', bins=18))
+  ) + theme_bw() + 
   ggtitle('Scatterplot matrix for Cai et al. (2015) variables') + theme(plot.title = element_text(hjust = 0.5))
-ggsave('figures/cai_scatter.png', p_scatter, width=11, height=7)
 p_scatter
+ggsave('figures/cai_scatter.png', p_scatter, width=11, height=7)
 
 
 

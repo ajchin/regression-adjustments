@@ -42,7 +42,7 @@ load('data/caltech.Rdata')
 
 
 n_reps = 1000
-n_cores = 56
+n_cores = 30
 
 registerDoParallel(cores=n_cores)
 
@@ -57,12 +57,10 @@ print(proc.time() - start)
 
 
 params = purrr::cross(list(
-  beta0 = list(c(0, 0, 0), c(0, 0, 0.05), c(0, 0.1, 0), c(0, 0.1, 0.05)),
-  beta1 = list(c(1, 0, 0), c(1, 0, 0.1), c(1, 0.5, 0), c(1, 0.5, 0.1)),
-  noise_sd = c(1, 3)
+  beta0 = list(c(0, 0, 0), c(0, 0, 0.01), c(0, 0.1, 0), c(0, 0.1, 0.01)),
+  beta1 = list(c(1, 0, 0), c(1, 0, 0.05), c(1, 0.2, 0), c(1, 0.2, 0.05)),
+  noise_sd = 1
 ))
-
-param = params[[4]]
 
 print('Running simulation...')
 # Run simulation
