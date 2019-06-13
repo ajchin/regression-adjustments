@@ -13,15 +13,24 @@ The directories `cai-data` and `data` serve as placeholder folders for the data.
 
 ## Reproducing results
 
-* The `functions` folder contains useful helpers and utilities described as follows:
+1. The `functions` folder contains useful helpers and utilities described as follows:
 
-- `covariate_functions.R` contains a few sample functions for generating possible interference features.  These are the X(*W*) functions described in the paper.
-- `response_functions.R` generates sample outcome models.
-- `data_generators.R` builds data frames containing realized samples of the data.
-- `existing_estimators.R` contains common baseline estimators, such as difference-in-means.
-- `proposed_estimators.R` constructs the adjustment estimators described in the paper.
-- `variance_estimators.R` builds variance estimators for existing and proposed estimators.
-- `precompute_matrices.R` contains functionality for precomputing certain covariance matrices which are the same for each simulation run.
+	- `covariate_functions.R` contains a few sample functions for generating possible interference features.  These are the X(*W*) functions described in the paper.
+	- `response_functions.R` generates sample outcome models.
+	- `data_generators.R` builds data frames containing realized samples of the data.
+	- `existing_estimators.R` contains common baseline estimators, such as difference-in-means.
+	- `proposed_estimators.R` constructs the adjustment estimators described in the paper.
+	- `variance_estimators.R` builds variance estimators for existing and proposed estimators.
+	- `precompute_matrices.R` contains functionality for precomputing certain covariance matrices which are the same for each simulation run.
 
-* The `figures` directory contains all figures from the paper.
-* The `results` directory is a placeholder location for the simulation output stored as `csv` files.
+2. The `figures` directory contains all figures from the paper.
+3. The `results` directory is a placeholder location for the simulation output stored as `csv` files.
+4. All remaining top-level files are used to generate the figures:
+
+	- `schematic_networks.R` generates Figure 1.
+	- `counterfactual_plots.R` generates Figure 2.
+	- `plot_weights.R' generates Figure 3.
+	
+	
+	
+	
