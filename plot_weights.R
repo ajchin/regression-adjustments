@@ -14,7 +14,6 @@ source('functions/existing_estimators.R')
 source('functions/proposed_estimators.R')
 source('functions/variance_estimators.R')
 source('functions/precompute_matrices.R')
-source('functions/clustering.R')
 
 set.seed(20)
 
@@ -60,15 +59,6 @@ df = rbind(
   data.frame(frac_nbh=X[w==0], wt=reg_wt0, w='control', estimator='regression'),
   data.frame(frac_nbh=X[w==1], wt=reg_wt1, w='treatment', estimator='regression')
 )
-
-
-# Clustered weights
-
-# clusters = epsilon_net(g_fb, order=2)
-# table(clusters)
-
-
-
 
 
 
